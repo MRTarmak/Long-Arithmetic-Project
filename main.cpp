@@ -1,8 +1,17 @@
 #include <iostream>
 
+#include "bfnumlib.h"
+
 int main(void)
 {
-    std::cout << "bimbimbambam" << std::endl;
+    bfn a(10, 10);
+    bfn b(20, 5);
+
+    b = 1.5;
+
+    a = b;
+
+    a.print_num();
 
     return 0;
 }
