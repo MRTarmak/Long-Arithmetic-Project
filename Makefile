@@ -1,2 +1,2 @@
-hello:
-	echo 'Hello World'
+main: main.cpp
+	g++ main.cpp
