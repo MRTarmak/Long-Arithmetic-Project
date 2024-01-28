@@ -2,104 +2,212 @@
 
 typedef class bfnum
 {
-    public:
-        int len;
-        int man_len;
-        int *number;
-        int *mantissa;
-
-        bfnum(int len, int man_len)
+private:
+    void push_left(int num)
+    {
+        for (int i = 0; i < this->len; i++)
         {
-            this->len = len;
-            this->man_len = man_len;
-            this->number = (int *)malloc(sizeof(int) * len);
-            this->mantissa = (int *)malloc(sizeof(int) * len);
-
-            for (int i = 0; i < len; i++)
+            if (i + num < len)
             {
-                number[i] = 0;
-                mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
+                this->number[i] = this->number[i + num];
+            }
+            else
+            {
+                this->number[i] = 0;
             }
         }
+    }
 
-        void push_left(int num)
+    void push_right(int num)
+    {
+        for (int i = this->len - 1; i >= 0; i--)
         {
-            for (int i = 0; i < this->len; i++)
+            if (i - num >= 0)
             {
-                if (i + num < len) this->number[i] = this->number[i + num];
-                else break;
+                this->number[i] = this->number[i - num];
+            }
+            else
+            {
+                this->number[i] = 0;
             }
         }
+    }
 
-        void print_num(void)
+    void levelout(bfnum &other)
+    {
+        int old_len_t = this->len;
+        int old_man_len_t = this->man_len;
+        int old_len_o = other.len;
+        int old_man_len_o = other.man_len;
+
+        int new_man_len = this->man_len > other.man_len ? this->man_len : other.man_len;
+        int new_len = this->len > other.len ? this->len : other.len + new_man_len;
+
+        this->len = new_len;
+        this->man_len = new_man_len;
+
+        this->number = (int *)realloc(this->number, sizeof(int) * this->len);
+        this->mantissa = (int *)realloc(this->mantissa, sizeof(int) * this->len);
+        for (int i = 0; i < this->len; i++)
         {
-            bool is_num = 0;
-            bool is_frac = 0;
-            for (int i = 0; i < this->len; i++)
-            {
-                if (is_num == 0 && this->mantissa[i] == 1)
-                {
-                    std::cout << 0 << std::flush;
-                    is_num = 1;
-                }
-                if (is_frac == 0 && this->mantissa[i] == 1)
-                {
-                    std::cout << '.' << std::flush;
-                    is_frac = 1;
-                }
-                if (this->number[i] != 0) is_num = 1;
-                if (is_num == 1 || this->number[i] != 0)
-                {
-                    std::cout << this->number[i] << std::flush;
-                }
-            }
-            if (is_num == 0) std::cout << 0 << std::flush;
-            std::cout << std::endl;
+            this->mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
         }
 
-        bfnum &operator=(const bfnum &other)
+        other.len = new_len;
+        other.man_len = new_man_len;
+
+        other.number = (int *)realloc(other.number, sizeof(int) * other.len);
+        other.mantissa = (int *)realloc(other.mantissa, sizeof(int) * other.len);
+        for (int i = 0; i < other.len; i++)
         {
-            this->len = other.len;
-            this->man_len = other.man_len;
-
-            this->number = (int *)realloc(this->number, sizeof(int) * len);
-            this->mantissa = (int *)realloc(this->mantissa, sizeof(int) * len);
-            
-            for (int i = 0; i < this->len; i++)
-            {
-                this->number[i] = other.number[i];
-                this->mantissa[i] = other.mantissa[i];
-            }
-
-            return *this;
+            other.mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
         }
 
-        bfnum &operator=(int other)
-        {
-            for (int i = this->len - 1; i >= 0; i--)
-            {
-                this->number[i] = other % 10;
-                other /= 10;
-            }
+        this->push_right(new_len - old_len_t - (new_man_len - old_man_len_t));
+        other.push_right(new_len - old_len_o - (new_man_len - old_man_len_o));
+    }
 
-            return *this;
+public:
+    int len;
+    int man_len;
+    int *number;
+    int *mantissa;
+    bool sign;
+
+    bfnum(void)
+    {
+        this->len = 0;
+        this->man_len = 0;
+        this->number = NULL;
+        this->mantissa = NULL;
+        this->sign = 1;
+    }
+
+    bfnum(int len, int man_len)
+    {
+        this->len = len;
+        this->man_len = man_len;
+        this->number = (int *)malloc(sizeof(int) * this->len);
+        this->mantissa = (int *)malloc(sizeof(int) * this->len);
+        this->sign = 1;
+
+        for (int i = 0; i < this->len; i++)
+        {
+            this->number[i] = 0;
+            this->mantissa[i] = (this->len - (i + 1) < this->man_len) ? 1 : 0;
+        }
+    }
+
+    void print_num(void)
+    {
+        bool is_num = 0;
+        bool is_frac = 0;
+        if (this->sign == 0)
+            std::cout << '-' << std::flush;
+        for (int i = 0; i < this->len; i++)
+        {
+            if (is_num == 0 && this->mantissa[i] == 1)
+            {
+                std::cout << 0 << std::flush;
+                is_num = 1;
+            }
+            if (is_frac == 0 && this->mantissa[i] == 1)
+            {
+                std::cout << '.' << std::flush;
+                is_frac = 1;
+            }
+            if (this->number[i] != 0)
+                is_num = 1;
+            if (is_num == 1 || this->number[i] != 0)
+            {
+                std::cout << this->number[i] << std::flush;
+            }
+        }
+        if (is_num == 0)
+            std::cout << 0 << std::flush;
+        std::cout << std::endl;
+    }
+
+    bfnum &operator=(const bfnum &other)
+    {
+        this->len = other.len;
+        this->man_len = other.man_len;
+        this->sign = other.sign;
+
+        this->number = (int *)realloc(this->number, sizeof(int) * len);
+        this->mantissa = (int *)realloc(this->mantissa, sizeof(int) * len);
+
+        for (int i = 0; i < this->len; i++)
+        {
+            this->number[i] = other.number[i];
+            this->mantissa[i] = other.mantissa[i];
         }
 
-        bfnum &operator=(double other)
+        return *this;
+    }
+
+    bfnum &operator=(int other)
+    {
+        if (other < 0)
         {
-            int num = other;
-            for (int i = this->len - this->man_len - 1; i >= 0; i--)
-            {
-                this->number[i] = num % 10;
-                num /= 10;
-            }
+            this->sign = 0;
+            other = -other;
+        }
+        for (int i = this->len - 1; i >= 0; i--)
+        {
+            this->number[i] = other % 10;
+            other /= 10;
+        }
+
+        return *this;
+    }
+
+    bfnum &operator=(double other)
+    {
+        if (other < 0)
+        {
+            this->sign = 0;
+            other = -other;
+        }
+        long num = other;
+        for (int i = this->len - this->man_len - 1; i >= 0; i--)
+        {
+            this->number[i] = num % 10;
+            num /= 10;
+        }
+        num = other * 10;
+        for (int i = this->len - this->man_len; i < this->len; i++)
+        {
+            this->number[i] = num % 10;
+            other *= 10;
             num = other * 10;
-            for (int i = this->len - this->man_len; i < this->len; i++)
-            {
-                this->number[i] = num % 10;
-                num *= 10;
-            }
-
-            return *this;
         }
+
+        return *this;
+    }
+
+    bfnum operator+(bfnum &other)
+    {
+        this->levelout(other);
+
+        if (this->sign == other.sign)
+        {
+            bfnum new_num(this->len, this->man_len);
+            new_num = *this;
+
+            for (int i = this->len - 1; i > 0; i--)
+            {
+                new_num.number[i] += other.number[i];
+                new_num.number[i - 1] += new_num.number[i] / 10;
+                new_num.number[i] = new_num.number[i] % 10;
+            }
+            new_num.number[0] = new_num.number[0] % 10;
+
+            return new_num;
+        }
+        else
+        {
+            return this - other; // TBA
+        }
+    }
 } bfn;
