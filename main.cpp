@@ -8,9 +8,9 @@ int main(void)
     bfn b(20, 5);
     bfn c;
 
-    b = 1.5;
+    b = -1.5;
 
-    a = 150.85;
+    a = -150.85;
 
     c = a + b;
     
