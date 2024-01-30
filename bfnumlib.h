@@ -162,7 +162,7 @@ public:
             this->sign = 0;
             other = -other;
         }
-        for (int i = this->len - 1; i >= 0; i--)
+        for (int i = this->len - this->man_len - 1; i >= 0; i--)
         {
             this->number[i] = other % 10;
             other /= 10;
@@ -376,6 +376,55 @@ public:
                 new_num.number[i] = new_num.number[i] % 10;
             }
             new_num.number[0] = new_num.number[0] % 10;
+
+            return new_num;
+        }
+    }
+
+    bfnum operator*(bfnum &other)
+    {
+        this->levelout(other);
+        this->print_num(); //
+        other.print_num(); //
+
+        bfnum null(1, 1);
+        if (*this == null || other == null) return null;
+        else
+        {
+            bfnum new_num(this->len, this->man_len);
+            new_num.sign = this->sign;
+            bfnum plus(this->len, this->man_len);
+            plus.sign = this->sign;
+            for (int i = other.len; i >= 0; i--)
+            {
+                if (other.number[i] != 0)
+                {
+                    for (int j = 0; j < other.number[i]; j++)
+                    {
+                        plus = plus + *this;
+                    }
+                    if (this->len - this->man_len - 1 - i < 0)
+                    {
+                        plus.push_right(i - (this->len - this->man_len - 1));
+                    }
+                    else
+                    {
+                        plus.push_left(this->len - this->man_len - 1 - i);
+                    }
+                    new_num = new_num + plus;
+                    plus = 0;
+                }
+            }
+            if (this->sign == other.sign || new_num == null)
+            {
+                new_num.sign = 1;
+            }
+            else new_num.sign = 0;
+            
+            free(null.number);
+            free(null.mantissa);
+            free(plus.number);
+            free(plus.mantissa);
 
             return new_num;
         }

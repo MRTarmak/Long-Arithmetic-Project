@@ -8,11 +8,11 @@ int main(void)
     bfn b(20, 5);
     bfn c;
 
-    b = -1.5;
+    b = 500;
 
     a = -150.85;
 
-    c = a + b;
+    c = a * b;
     
     c.print_num();
 
