@@ -230,7 +230,8 @@ public:
     bool operator==(bfnum &other)
     {
         this->levelout(other);
-
+        
+        if (this->sign != other.sign) return 0;
         for (int i = 0; i < this->len; i++)
         {
             if (this->number[i] != other.number[i]) return 0;
@@ -242,6 +243,7 @@ public:
     {
         this->levelout(other);
 
+        if (this->sign != other.sign) return 1;
         for (int i = 0; i < this->len; i++)
         {
             if (this->number[i] != other.number[i]) return 1;
@@ -253,6 +255,8 @@ public:
     {
         this->levelout(other);
 
+        if (this->sign == 1 && other.sign == 0) return 0;
+        else if (this->sign == 0 && other.sign == 1) return 1;
         for (int i = 0; i < this->len; i++)
         {
             if (this->number[i] < other.number[i]) return 1;
@@ -265,6 +269,8 @@ public:
     {
         this->levelout(other);
 
+        if (this->sign == 1 && other.sign == 0) return 1;
+        else if (this->sign == 0 && other.sign == 1) return 0;
         for (int i = 0; i < this->len; i++)
         {
             if (this->number[i] > other.number[i]) return 1;
@@ -294,6 +300,8 @@ public:
         }
         else
         {
+            bfnum null(1, 1);
+            null.sign = 0;
             if (*this > other)
             {
                 bfnum new_num(this->len, this->man_len);
@@ -312,6 +320,11 @@ public:
                         new_num.number[0] = -new_num.number[0];
                         new_num.sign = !new_num.sign;
                     }
+                }
+
+                if (new_num == null)
+                {
+                    new_num.sign = 1;
                 }
 
                 return new_num;
@@ -337,6 +350,11 @@ public:
                 }
 
                 new_num.sign = !new_num.sign;
+
+                if (new_num == null)
+                {
+                    new_num.sign = 1;
+                }
 
                 return new_num;
             }
@@ -349,6 +367,8 @@ public:
 
         if (this->sign == other.sign)
         {
+            bfnum null(1, 1);
+            null.sign = 0;
             if (*this > other)
             {
                 bfnum new_num(this->len, this->man_len);
@@ -367,6 +387,11 @@ public:
                         new_num.number[0] = -new_num.number[0];
                         new_num.sign = !new_num.sign;
                     }
+                }
+
+                if (new_num == null)
+                {
+                    new_num.sign = 1;
                 }
 
                 return new_num;
@@ -392,6 +417,11 @@ public:
                 }
 
                 new_num.sign = !new_num.sign;
+
+                if (new_num == null)
+                {
+                    new_num.sign = 1;
+                }
 
                 return new_num;
             }
@@ -471,35 +501,85 @@ public:
         }
         else
         {
-            bfnum new_num(this->len + this->man_len, this->man_len);
+            bfnum new_num(this->len + this->man_len, 0);
             bfnum nthis = *this;
             bfnum nother = other;
             nthis.levelout(new_num);
             nother.levelout(new_num);
-            nthis.push_left(this->man_len);
-            nother.push_left(this->man_len);
-            for (int i = 0; i < new_num.len; i++)
+            nthis.sign = 1;
+            nother.sign = 1;
+            nthis.print_num();
+            nother.print_num();
+            int k = 0;
+            int ind = new_num.len - 1;
+
+            while (nthis > null)
             {
-                bfnum tmp(other.len + 1, 0);
-                for (int j = nother.len; j >= 0; j--)
+                nthis = nthis - nother;
+                if (nthis < null)
                 {
-                    tmp.number[j] = nthis.number[j];
+                    nthis = nthis + nother;
+                    nthis.sign = 1;
+                    break;
                 }
-                bfnum minus = null;
-                for (int j = 1; j < 10; j++)
+                else if (nthis == null)
                 {
-                    minus = minus + nother;
-                    if (minus > tmp)
-                    {
-                        minus - nother;
-                        new_num.number[i] = j;
-                        break;
-                    }
+                    k++;
+                    break;
                 }
-                tmp = tmp - minus;
-                minus = null;
-                nother.push_right(1);
+                else
+                {
+                    k++;
+                }
             }
+            int digits = 0;
+            if (k == 0) 
+            {
+                new_num.number[ind] = 0;
+                digits = 1;
+            }
+            while (k > 0)
+            {
+                new_num.number[ind] = k % 10;
+                ind--;
+                k /= 10;
+                digits++;
+            }
+
+            if (nthis == null)
+            {
+                new_num.push_left(new_num.man_len);
+            }
+            if (nthis != null)
+            {
+                new_num.push_left(new_num.len - digits);
+                nthis.push_left(1);
+                for (int i = digits; i < new_num.len; i++)
+                {
+                    for (int j = 0; j < 10; j++)
+                    {
+                        nthis.print_num();
+                        nthis = nthis - nother;
+                        if (nthis < null)
+                        {
+                            nthis = nthis + nother;
+                            nthis.sign = 1;
+                            new_num.number[i] = j;
+                            new_num.mantissa[i] = 1;
+                            break;
+                        }
+                        else if (nthis == null)
+                        {
+                            j++;
+                            new_num.number[i] = j;
+                            new_num.mantissa[i] = 1;
+                            goto stop;
+                        }
+                    }
+                    nthis.push_left(1);
+                }
+            }
+            stop:
             if (this->sign == other.sign || new_num == null)
             {
                 new_num.sign = 1;

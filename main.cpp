@@ -12,7 +12,7 @@ int main(void)
 
     a = -151.85;
 
-    c = a / b;
+    c = b / a;
     
     c.print_num();
 
