@@ -8,13 +8,13 @@ int main(void)
     bfn b(20, 5);
     bfn c;
 
-    b = 500;
+    b = 18.46e1;
 
     a = -151.85;
 
     c = b / a;
     
-    c.print_num();
+    std::cout << c.get_string() << std::endl;
 
     return 0;
 }

@@ -169,6 +169,39 @@ public:
         std::cout << std::endl;
     }
 
+    std::string get_string(void)
+    {
+        std::string str;
+
+        bool is_num = 0;
+        bool is_frac = 0;
+        if (this->sign == 0)
+            str.push_back('-');
+        for (int i = 0; i < this->len; i++)
+        {
+            if (is_num == 0 && this->mantissa[i] == 1)
+            {
+                str.push_back(0);
+                is_num = 1;
+            }
+            if (is_frac == 0 && this->mantissa[i] == 1)
+            {
+                str.push_back('.');
+                is_frac = 1;
+            }
+            if (this->number[i] != 0)
+                is_num = 1;
+            if (is_num == 1 || this->number[i] != 0)
+            {
+                str.push_back(this->number[i] + '0');
+            }
+        }
+        if (is_num == 0)
+            str.push_back(0);
+
+        return(str);
+    }
+
     bfnum &operator=(const bfnum &other)
     {
         this->len = other.len;
@@ -508,8 +541,6 @@ public:
             nother.levelout(new_num);
             nthis.sign = 1;
             nother.sign = 1;
-            nthis.print_num();
-            nother.print_num();
             int k = 0;
             int ind = new_num.len - 1;
 
@@ -558,7 +589,6 @@ public:
                 {
                     for (int j = 0; j < 10; j++)
                     {
-                        nthis.print_num();
                         nthis = nthis - nother;
                         if (nthis < null)
                         {
