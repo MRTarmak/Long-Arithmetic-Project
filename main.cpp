@@ -10,9 +10,9 @@ int main(void)
 
     b = 500;
 
-    a = -150.85;
+    a = -151.85;
 
-    c = a * b;
+    c = a / b;
     
     c.print_num();
 
