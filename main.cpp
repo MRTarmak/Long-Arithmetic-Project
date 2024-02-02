@@ -4,9 +4,9 @@
 
 int main(void)
 {
-    bfn a(10, 7);
-    bfn b(20, 5);
-    bfn c;
+    bfnum a(10, 7);
+    bfnum b(20, 5);
+    bfnum c;
 
     b = 18.46e1;
 

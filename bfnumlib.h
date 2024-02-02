@@ -1,68 +1,74 @@
 #include <iostream>
 #include <vector>
 
-typedef class bfnum
+class bfnum
 {
 private:
+    int len = 0;
+    int man_len;
+    std::vector<int> number;
+    std::vector<int> mantissa;
+    bool sign;
+
+    // void push_left(int); // вынести реализацию в .cpp
     void push_left(int num)
     {
-        for (int i = 0; i < this->len; i++)
+        for (int i = 0; i < len; i++)
         {
             if (i + num < len)
             {
-                this->number[i] = this->number[i + num];
+                number[i] = number[i + num];
             }
             else
             {
-                this->number[i] = 0;
+                number[i] = 0;
             }
         }
     }
 
     void push_right(int num)
     {
-        for (int i = this->len - 1; i >= 0; i--)
+        for (int i = len - 1; i >= 0; i--)
         {
             if (i - num >= 0)
             {
-                this->number[i] = this->number[i - num];
+                number[i] = number[i - num];
             }
             else
             {
-                this->number[i] = 0;
+                number[i] = 0;
             }
         }
     }
 
     void levelout(bfnum &other)
     {
-        if (this -> len != other.len || this->man_len != other.man_len)
+        if (len != other.len || man_len != other.man_len)
         {
-            int old_len_t = this->len;
-            int old_man_len_t = this->man_len;
+            int old_len_t = len;
+            int old_man_len_t = man_len;
             int old_len_o = other.len;
             int old_man_len_o = other.man_len;
 
-            int new_man_len = this->man_len > other.man_len ? this->man_len : other.man_len;
-            int new_len = this->len > other.len ? this->len : other.len;
+            int new_man_len = man_len > other.man_len ? man_len : other.man_len;
+            int new_len = len > other.len ? len : other.len;
 
-            this->len = new_len;
-            this->man_len = new_man_len;
+            len = new_len;
+            man_len = new_man_len;
 
-            while (this->number.size() != this->len)
+            while (number.size() != len)
             {
-                this->number.push_back(0);
-                this->mantissa.push_back(0);
+                number.push_back(0);
+                mantissa.push_back(0);
             }
 
-            for (int i = this->len - this->man_len; i < this->len; i++)
+            for (int i = len - man_len; i < len; i++)
             {
-                if (this->len - (i + 1) < this->man_len)
-                    this->mantissa[i] = 1;
+                if (len - (i + 1) < man_len)
+                    mantissa[i] = 1;
                 else
-                    this->mantissa[i] = 0;
+                    mantissa[i] = 0;
             }
-
 
             other.len = new_len;
             other.man_len = new_man_len;
@@ -82,10 +88,10 @@ private:
             }
 
             if (new_len - old_len_t - (new_man_len - old_man_len_t) > 0)
-                this->push_right(new_len - old_len_t - (new_man_len - old_man_len_t));
+                push_right(new_len - old_len_t - (new_man_len - old_man_len_t));
             else
-                this->push_left(-(new_len - old_len_t - (new_man_len - old_man_len_t)));
-            
+                push_left(-(new_len - old_len_t - (new_man_len - old_man_len_t)));
+
             for (int i = 0; i < this->len; i++)
             {
                 this->mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
@@ -108,68 +114,71 @@ private:
     }
 
 public:
-    int len;
-    int man_len;
-    std::vector<int> number;
-    std::vector<int> mantissa;
-    bool sign;
-
-    bfnum(void)
+    bfnum()
     {
-        this->len = 0;
-        this->man_len = 0;
-        this->number.push_back(0);
-        this->mantissa.push_back(0);
-        this->sign = 1;
+        len = 0;
+        man_len = 0;
+        number.push_back(0);
+        mantissa.push_back(0);
+        sign = 1;
+    }
+
+    bfnum(long long num)
+    {
+        if (num < 0)
+        {
+            sign = 0;
+            num = -num;
+        }
+        while (num > 0)
+        {
+            number.push_back(num % 10);
+            mantissa.push_back(0);
+            num /= 10;
+        }
+    }
+
+    bfnum(double num)
+    {
+        if (num < 0)
+        {
+            sign = 0;
+            num = -num;
+        }
+        long long dec = num;
+        while (dec > 0)
+        {
+            number.push_back(dec % 10);
+            mantissa.push_back(0);
+            dec /= 10;
+        }
+        dec = num * 10; // остановился тут
+        while(num > 0)
+        {
+            number.push_back(dec % 10);
+            mantissa.push_back(1);
+            num *= 10;
+            dec = num * 10;
+        }
     }
 
     bfnum(int len, int man_len)
     {
-        this->len = len;
-        this->man_len = man_len;
-        this->sign = 1;
+        len = len;
+        man_len = man_len;
+        sign = 1;
 
-        for (int i = 0; i < this->len; i++)
+        for (int i = 0; i < len; i++)
         {
-            this->number.push_back(0);
-            if (this->len - (i + 1) < this->man_len)
-                this->mantissa.push_back(1);
+            number.push_back(0);
+            if (len - (i + 1) < man_len)
+                mantissa.push_back(1);
             else
-                this->mantissa.push_back(0);
+                mantissa.push_back(0);
         }
     }
 
-    void print_num(void)
-    {
-        bool is_num = 0;
-        bool is_frac = 0;
-        if (this->sign == 0)
-            std::cout << '-' << std::flush;
-        for (int i = 0; i < this->len; i++)
-        {
-            if (is_num == 0 && this->mantissa[i] == 1)
-            {
-                std::cout << 0 << std::flush;
-                is_num = 1;
-            }
-            if (is_frac == 0 && this->mantissa[i] == 1)
-            {
-                std::cout << '.' << std::flush;
-                is_frac = 1;
-            }
-            if (this->number[i] != 0)
-                is_num = 1;
-            if (is_num == 1 || this->number[i] != 0)
-            {
-                std::cout << this->number[i] << std::flush;
-            }
-        }
-        if (is_num == 0)
-            std::cout << 0 << std::flush;
-        std::cout << std::endl;
-    }
-
-    std::string get_string(void)
+    std::string get_string()
     {
         std::string str;
 
@@ -199,7 +208,7 @@ public:
         if (is_num == 0)
             str.push_back(0);
 
-        return(str);
+        return (str);
     }
 
     bfnum &operator=(const bfnum &other)
@@ -220,16 +229,17 @@ public:
         return *this;
     }
 
-    bfnum &operator=(int other)
+    // переместить в конструктор, использовать long long
+    bfnum &operator=(long long other)
     {
         if (other < 0)
         {
-            this->sign = 0;
+            sign = 0;
             other = -other;
         }
-        for (int i = this->len - this->man_len - 1; i >= 0; i--)
+        for (int i = len - man_len - 1; i >= 0; i--)
         {
-            this->number[i] = other % 10;
+            number[i] = other % 10;
             other /= 10;
         }
 
@@ -260,56 +270,66 @@ public:
         return *this;
     }
 
+    // придумать как сделать const const
     bool operator==(bfnum &other)
     {
-        this->levelout(other);
-        
-        if (this->sign != other.sign) return 0;
-        for (int i = 0; i < this->len; i++)
+        levelout(other);
+
+        if (sign != other.sign)
+            return false;
+
+        for (int i = 0; i < len; i++)
         {
-            if (this->number[i] != other.number[i]) return 0;
+            if (number[i] != other.number[i])
+                return false;
         }
-        return 1;
+        return true;
     }
 
+    // попробовать реализовать через <=>
     bool operator!=(bfnum &other)
     {
-        this->levelout(other);
+        // this->levelout(other);
 
-        if (this->sign != other.sign) return 1;
-        for (int i = 0; i < this->len; i++)
-        {
-            if (this->number[i] != other.number[i]) return 1;
-        }
-        return 0;
+        // if (this->sign != other.sign) return 1;
+        // for (int i = 0; i < this->len; i++)
+        // {
+        //     if (this->number[i] != other.number[i]) return 1;
+        // }
+        // return 0;
+        return !(*this == other);
     }
 
     bool operator<(bfnum &other)
     {
         this->levelout(other);
 
-        if (this->sign == 1 && other.sign == 0) return 0;
-        else if (this->sign == 0 && other.sign == 1) return 1;
+        if (this->sign == 1 && other.sign == 0)
+            return 0;
+        else if (this->sign == 0 && other.sign == 1)
+            return 1;
         for (int i = 0; i < this->len; i++)
         {
-            if (this->number[i] < other.number[i]) return 1;
-            if (this->number[i] > other.number[i]) return 0;
+            if (this->number[i] < other.number[i])
+                return 1;
+            if (this->number[i] > other.number[i])
+                return 0;
         }
         return 0;
     }
 
-    bool operator>(bfnum &other)
-    {
-        this->levelout(other);
+    bool operator>(bfnum &other){
+        // this->levelout(other);
 
-        if (this->sign == 1 && other.sign == 0) return 1;
-        else if (this->sign == 0 && other.sign == 1) return 0;
-        for (int i = 0; i < this->len; i++)
-        {
-            if (this->number[i] > other.number[i]) return 1;
-            if (this->number[i] < other.number[i]) return 0;
-        }
-        return 0;
+        // if (this->sign == 1 && other.sign == 0) return 1;
+        // else if (this->sign == 0 && other.sign == 1) return 0;
+        // for (int i = 0; i < this->len; i++)
+        // {
+        //     if (this->number[i] > other.number[i]) return 1;
+        //     if (this->number[i] < other.number[i]) return 0;
+        // }
+        // return 0;
+        return *this != other && !(*this < other);  
     }
 
     bfnum operator+(bfnum &other)
@@ -481,7 +501,8 @@ public:
         this->levelout(other);
 
         bfnum null(1, 1);
-        if (*this == null || other == null) return null;
+        if (*this == null || other == null)
+            return null;
         else
         {
             bfnum new_num(this->len, this->man_len);
@@ -505,14 +526,15 @@ public:
                         plus.push_left(this->len - this->man_len - 1 - i);
                     }
                     new_num = new_num + plus;
-                    plus = 0;
+                    plus = 0.0;
                 }
             }
             if (this->sign == other.sign || new_num == null)
             {
                 new_num.sign = 1;
             }
-            else new_num.sign = 0;
+            else
+                new_num.sign = 0;
 
             return new_num;
         }
@@ -564,7 +586,7 @@ public:
                 }
             }
             int digits = 0;
-            if (k == 0) 
+            if (k == 0)
             {
                 new_num.number[ind] = 0;
                 digits = 1;
@@ -609,14 +631,15 @@ public:
                     nthis.push_left(1);
                 }
             }
-            stop:
+        stop:
             if (this->sign == other.sign || new_num == null)
             {
                 new_num.sign = 1;
             }
-            else new_num.sign = 0;
+            else
+                new_num.sign = 0;
 
             return new_num;
         }
     }
-} bfn;
+};
