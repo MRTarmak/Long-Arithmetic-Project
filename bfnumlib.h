@@ -1,13 +1,13 @@
 #include <iostream>
-#include <vector>
+#include <deque>
 
 class bfnum
 {
 private:
-    int len = 0;
+    int len;
     int man_len;
-    std::vector<int> number;
-    std::vector<int> mantissa;
+    std::deque<int> number;
+    std::deque<int> mantissa;
     bool sign;
 
     // void push_left(int); // вынести реализацию в .cpp
@@ -61,9 +61,6 @@ private:
                 number.push_back(0);
                 mantissa.push_back(0);
             }
-
-            std::cout << get_string() << std::endl; //
-            std::cout << other.get_string() << std::endl; //
 
             for (int i = len - man_len; i < len; i++)
             {
@@ -128,43 +125,52 @@ public:
 
     bfnum(long long num)
     {
+        len = 0;
+        man_len = 0;
         if (num < 0)
         {
             sign = 0;
             num = -num;
         }
+        else
+            sign = 1;
         while (num > 0)
         {
-            number.push_back(num % 10);
-            mantissa.push_back(0);
+            number.push_front(num % 10);
+            mantissa.push_front(0);
+            len++;
             num /= 10;
         }
     }
 
-    bfnum(double num, int len)
+    bfnum(double num, int man_len = 10)
     {
-        int ind = 0;
+        len = 0;
+        this->man_len = 0;
         if (num < 0)
         {
             sign = 0;
             num = -num;
         }
+        else
+            sign = 1;
         long long dec = num;
         while (dec > 0)
         {
-            number.push_back(dec % 10);
-            mantissa.push_back(0);
+            number.push_front(dec % 10);
+            mantissa.push_front(0);
             dec /= 10;
-            ind++;
+            len++;
         }
-        dec = num * 10;
-        while (ind < len)
+        num *= 10;
+        while (this->man_len < man_len)
         {
-            number.push_back(dec % 10);
+            dec = (long long)num % 10;
+            number.push_back(dec);
             mantissa.push_back(1);
             num *= 10;
-            dec = num * 10;
-            ind++;
+            len++;
+            this->man_len++;
         }
     }
 
@@ -180,7 +186,7 @@ public:
         {
             if (is_num == 0 && this->mantissa[i] == 1)
             {
-                str.push_back(0);
+                str.push_back('0');
                 is_num = 1;
             }
             if (is_frac == 0 && this->mantissa[i] == 1)
@@ -229,7 +235,7 @@ public:
 
     bfnum &operator=(double other)
     {
-        bfnum nthis(other, this->len);
+        bfnum nthis(other);
         *this = nthis;
 
         return *this;
@@ -299,7 +305,12 @@ public:
                 new_num.number[i - 1] += new_num.number[i] / 10;
                 new_num.number[i] = new_num.number[i] % 10;
             }
-            new_num.number[0] = new_num.number[0] % 10;
+            new_num.number[0] += nother.number[0];
+            if (new_num.number[0] > 9)
+            {
+                new_num.number.push_front(new_num.number[0] / 10);
+                new_num.number[1] = new_num.number[1] % 10;
+            }
 
             return new_num;
         }
@@ -328,7 +339,7 @@ public:
 
         if (nthis.sign == nother.sign)
         {
-            bfnum null(0.0);
+            bfnum null;
             null.sign = 0;
             if (nthis > nother)
             {
@@ -375,12 +386,12 @@ public:
                     }
                 }
 
-                new_num.sign = !new_num.sign;
-
                 if (new_num == null)
                 {
                     new_num.sign = 1;
                 }
+                else
+                    new_num.sign = 0;
 
                 return new_num;
             }
@@ -408,7 +419,18 @@ public:
         bfnum nother = other;
         nthis.levelout(nother);
 
-        bfnum null(0.0);
+        int new_len = nthis.len - nthis.man_len + nother.len - nthis.man_len;
+        while ((nthis.len - nthis.man_len) != new_len)
+        {
+            nthis.number.push_front(0);
+            nthis.mantissa.push_front(0);
+            nthis.len++;
+            nother.number.push_front(0);
+            nother.mantissa.push_front(0);
+            nother.len++;
+        }
+
+        bfnum null;
         if (nthis == null || nother == null)
             return null;
         else
@@ -454,7 +476,14 @@ public:
         bfnum nother = other;
         nthis.levelout(nother);
 
-        bfnum null(0.0);
+        nthis.number.push_front(0);
+        nthis.mantissa.push_front(0);
+        nthis.len++;
+        nother.number.push_front(0);
+        nother.mantissa.push_front(0);
+        nother.len++;
+
+        bfnum null;
         if (nother == null)
         {
             std::cout << "ERROR: dividing by zero" << std::endl;
@@ -466,13 +495,10 @@ public:
         }
         else
         {
-            bfnum new_num(0, nthis.len + nthis.man_len);
-            nthis.levelout(new_num);
-            nother.levelout(new_num);
+            bfnum new_num(0.0, nthis.man_len);
             nthis.sign = 1;
             nother.sign = 1;
             int dec_pt = 0;
-            int ind = new_num.len - 1;
 
             while (nthis > null)
             {
@@ -494,26 +520,17 @@ public:
                 }
             }
             int digits = 0;
-            if (dec_pt == 0)
-            {
-                new_num.number[ind] = 0;
-                digits = 1;
-            }
             while (dec_pt > 0)
             {
-                new_num.number[ind] = dec_pt % 10;
-                ind--;
+                new_num.number.push_front(dec_pt % 10);
+                new_num.mantissa.push_front(0);
+                new_num.len++;
                 dec_pt /= 10;
                 digits++;
             }
 
-            if (nthis == null)
-            {
-                new_num.push_left(new_num.man_len);
-            }
             if (nthis != null)
             {
-                new_num.push_left(new_num.len - digits);
                 nthis.push_left(1);
                 for (int i = digits; i < new_num.len; i++)
                 {
