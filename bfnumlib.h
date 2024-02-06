@@ -13,11 +13,42 @@ private:
     // void push_left(int); // вынести реализацию в .cpp
     void push_left(int num)
     {
+        bool is_null = 1;
+        for (int i = 0; i < len; i++)
+        {
+            if (number[i] != 0)
+            {
+                is_null = 0;
+                break;
+            }
+        }
+        if (is_null)
+            return;
+
+        bool is_num = 0;
+        int prev_len = len;
+        for (int i = 0; i < prev_len; i++)
+        {
+            number.push_front(0);
+            mantissa.push_front(0);
+            len++;
+        }
         for (int i = 0; i < len; i++)
         {
             if (i + num < len)
             {
                 number[i] = number[i + num];
+                if (number[i] == 0 && is_num == 0 && i < prev_len)
+                {
+                    number.pop_front();
+                    mantissa.pop_front();
+                    len--;
+                    i--;
+                }
+                else
+                {
+                    is_num = 1;
+                }
             }
             else
             {
@@ -28,11 +59,41 @@ private:
 
     void push_right(int num)
     {
+        bool is_null = 1;
+        for (int i = 0; i < len; i++)
+        {
+            if (number[i] != 0)
+            {
+                is_null = 0;
+                break;
+            }
+        }
+        if (is_null)
+            return;
+
+        bool is_num = 0;
+        int prev_len = len;
+        for (int i = 0; i < prev_len; i++)
+        {
+            number.push_back(0);
+            mantissa.push_back(1);
+            len++;
+        }
         for (int i = len - 1; i >= 0; i--)
         {
             if (i - num >= 0)
             {
                 number[i] = number[i - num];
+                if (number[i] == 0 && is_num == 0 && i >= prev_len)
+                {
+                    number.pop_back();
+                    mantissa.pop_back();
+                    len--;
+                }
+                else
+                {
+                    is_num = 1;
+                }
             }
             else
             {
@@ -89,7 +150,7 @@ private:
 
             if (new_len - old_len_t - (new_man_len - old_man_len_t) > 0)
                 push_right(new_len - old_len_t - (new_man_len - old_man_len_t));
-            else
+            else if (new_len - old_len_t - (new_man_len - old_man_len_t) < 0)
                 push_left(-(new_len - old_len_t - (new_man_len - old_man_len_t)));
 
             for (int i = 0; i < this->len; i++)
@@ -101,7 +162,7 @@ private:
 
             if (new_len - old_len_o - (new_man_len - old_man_len_o) > 0)
                 other.push_right(new_len - old_len_o - (new_man_len - old_man_len_o));
-            else
+            else if (new_len - old_len_o - (new_man_len - old_man_len_o) < 0)
                 other.push_left(-(new_len - old_len_o - (new_man_len - old_man_len_o)));
 
             for (int i = 0; i < other.len; i++)
@@ -123,6 +184,16 @@ public:
         sign = 1;
     }
 
+    bfnum(int num)
+    {
+        *this = bfnum((long long)num);
+    }
+
+    bfnum(long num)
+    {
+        *this = bfnum((long long)num);
+    }
+
     bfnum(long long num)
     {
         len = 0;
@@ -140,6 +211,12 @@ public:
             mantissa.push_front(0);
             len++;
             num /= 10;
+        }
+        if (len == 0)
+        {
+            number.push_front(0);
+            mantissa.push_front(0);
+            len++;
         }
     }
 
@@ -171,6 +248,12 @@ public:
             num *= 10;
             len++;
             this->man_len++;
+        }
+        if (len == 0)
+        {
+            number.push_front(0);
+            mantissa.push_front(0);
+            len++;
         }
     }
 
@@ -247,15 +330,15 @@ public:
         bfnum nother = other;
         nthis.levelout(nother);
 
-        if (sign != other.sign)
-            return false;
+        if (nthis.sign != nother.sign)
+            return 0;
 
         for (int i = 0; i < len; i++)
         {
-            if (number[i] != other.number[i])
-                return false;
+            if (nthis.number[i] != nother.number[i])
+                return 0;
         }
-        return true;
+        return 1;
     }
 
     // попробовать реализовать через <=>
@@ -310,6 +393,7 @@ public:
             {
                 new_num.number.push_front(new_num.number[0] / 10);
                 new_num.number[1] = new_num.number[1] % 10;
+                new_num.len++;
             }
 
             return new_num;
@@ -419,17 +503,6 @@ public:
         bfnum nother = other;
         nthis.levelout(nother);
 
-        int new_len = nthis.len - nthis.man_len + nother.len - nthis.man_len;
-        while ((nthis.len - nthis.man_len) != new_len)
-        {
-            nthis.number.push_front(0);
-            nthis.mantissa.push_front(0);
-            nthis.len++;
-            nother.number.push_front(0);
-            nother.mantissa.push_front(0);
-            nother.len++;
-        }
-
         bfnum null;
         if (nthis == null || nother == null)
             return null;
@@ -439,7 +512,7 @@ public:
             new_num.sign = nthis.sign;
             bfnum plus;
             plus.sign = nthis.sign;
-            for (int i = nother.len; i >= 0; i--)
+            for (int i = nother.len - 1; i >= 0; i--)
             {
                 if (nother.number[i] != 0)
                 {
@@ -566,5 +639,75 @@ public:
 
             return new_num;
         }
+    }
+
+    bfnum fact()
+    {
+        bfnum nthis = *this;
+        bfnum res = 1;
+        while (nthis != 0.0)
+        {
+            res = res * nthis;
+            nthis = nthis - 1;
+        }
+
+        return res;
+    }
+
+    bfnum pow(long long pow)
+    {
+        bfnum new_num = *this;
+
+        if (pow == 0)
+            return 1;
+
+        for (long long i = 1; i < pow; i++)
+        {
+            new_num = new_num * new_num;
+        }
+
+        return new_num;
+    }
+
+    bfnum abs()
+    {
+        bfnum nthis = *this;
+
+        nthis.sign = 1;
+
+        return nthis;
+    }
+
+    bfnum sqrt(long long precision)
+    {
+        bfnum x = *this;
+
+        if (x < 0)
+            exit(1);
+        if (x == 0)
+            return 0;
+
+        bfnum xhi = x;
+        bfnum xlo = 0;
+        bfnum guess = x / 2;
+
+        bfnum eps = 0.1;
+        eps = eps.pow(precision);
+
+        while ((guess * guess - x).abs() > eps)
+        {
+            if (guess * guess > x)
+            {
+                xhi = guess;
+            }
+            else
+            {
+                xlo = guess;
+            }
+
+            guess = (xhi + xlo) / 2;
+        }
+
+        return guess;
     }
 };
