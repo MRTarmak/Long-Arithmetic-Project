@@ -34,9 +34,12 @@ bfnum pi_calculation(long long n)
 
 int main(void)
 {
-    bfnum a = (long long)10;
-    a = pi_calculation(1);
-    std::cout << a.get_string() << std::endl;
+    bfnum a = 541.374;
+    // a = pi_calculation(1);
+    bfnum b = 1.53232;
+    bfnum c = a / b;
+    int pre = 10;
+    std::cout << c.get_string() << std::endl;
 
     return 0;
 }

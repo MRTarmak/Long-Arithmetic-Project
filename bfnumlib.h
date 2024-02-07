@@ -104,73 +104,93 @@ private:
 
     void levelout(bfnum &other)
     {
-        if (len != other.len || man_len != other.man_len)
+        for (int i = 0; i < len; i++) // Удаление незначащих нулей в конце
         {
-            int old_len_t = len;
-            int old_man_len_t = man_len;
-            int old_len_o = other.len;
-            int old_man_len_o = other.man_len;
-
-            int new_man_len = man_len > other.man_len ? man_len : other.man_len;
-            int new_len = len > other.len ? len : other.len;
-
-            len = new_len;
-            man_len = new_man_len;
-
-            while (number.size() != len)
+            if (number[(len - 1) - i] == 0 && mantissa[(len - 1) - i] == 1)
             {
-                number.push_back(0);
-                mantissa.push_back(0);
+                man_len--;
+                len--;
+                number.pop_back();
+                mantissa.pop_back();
+                i--;
             }
-
-            for (int i = len - man_len; i < len; i++)
+            else
+                break;
+        }
+        for (int i = 0; i < len; i++) // Удаление незначащих нулей в начале
+        {
+            if (number[i] == 0 && i != len - man_len - 1)
             {
-                if (len - (i + 1) < man_len)
-                    mantissa[i] = 1;
-                else
-                    mantissa[i] = 0;
+                len--;
+                number.pop_front();
+                mantissa.pop_front();
+                i--;
             }
+            else
+                break;
+        }
 
-            other.len = new_len;
-            other.man_len = new_man_len;
-
-            while (other.number.size() != other.len)
+        for (int i = 0; i < other.len; i++) // Удаление незначащих нулей в конце
+        {
+            if (other.number[(other.len - 1) - i] == 0 && other.mantissa[(other.len - 1) - i] == 1)
             {
-                other.number.push_back(0);
-                other.mantissa.push_back(0);
+                other.man_len--;
+                other.len--;
+                other.number.pop_back();
+                other.mantissa.pop_back();
+                i--;
             }
-
-            for (int i = other.len - other.man_len; i < other.len; i++)
+            else
+                break;
+        }
+        for (int i = 0; i < other.len; i++) // Удаление незначащих нулей в начале
+        {
+            if (other.number[i] == 0 && i != other.len - other.man_len - 1)
             {
-                if (other.len - (i + 1) < other.man_len)
-                    other.mantissa[i] = 1;
-                else
-                    other.mantissa[i] = 0;
+                other.len--;
+                other.number.pop_front();
+                other.mantissa.pop_front();
+                i--;
             }
+            else
+                break;
+        }
 
-            if (new_len - old_len_t - (new_man_len - old_man_len_t) > 0)
-                push_right(new_len - old_len_t - (new_man_len - old_man_len_t));
-            else if (new_len - old_len_t - (new_man_len - old_man_len_t) < 0)
-                push_left(-(new_len - old_len_t - (new_man_len - old_man_len_t)));
+        int old_len_t = len;
+        int old_man_len_t = man_len;
+        int old_len_o = other.len;
+        int old_man_len_o = other.man_len;
 
-            for (int i = 0; i < this->len; i++)
-            {
-                this->mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
-                if (i < new_len - old_len_t)
-                    this->number[i] = 0;
-            }
+        int new_man_len = man_len > other.man_len ? man_len : other.man_len;
+        int new_len = (len - man_len) > (other.len - other.man_len) ? (len - man_len) : (other.len - other.man_len);
+        new_len += new_man_len;
 
-            if (new_len - old_len_o - (new_man_len - old_man_len_o) > 0)
-                other.push_right(new_len - old_len_o - (new_man_len - old_man_len_o));
-            else if (new_len - old_len_o - (new_man_len - old_man_len_o) < 0)
-                other.push_left(-(new_len - old_len_o - (new_man_len - old_man_len_o)));
+        while (man_len != new_man_len) // Выравнивание числа
+        {
+            number.push_back(0);
+            mantissa.push_back(1);
+            man_len++;
+            len++;
+        }
+        while (len != new_len)
+        {
+            number.push_front(0);
+            mantissa.push_front(0);
+            len++;
+        }
 
-            for (int i = 0; i < other.len; i++)
-            {
-                other.mantissa[i] = (len - (i + 1) < man_len) ? 1 : 0;
-                if (i < new_len - old_len_o)
-                    other.number[i] = 0;
-            }
+        while (other.man_len != new_man_len) // Выравнивание числа
+        {
+            other.number.push_back(0);
+            other.mantissa.push_back(1);
+            other.man_len++;
+            other.len++;
+        }
+        while (other.len != new_len)
+        {
+            other.number.push_front(0);
+            other.mantissa.push_front(0);
+            other.len++;
         }
     }
 
@@ -549,88 +569,62 @@ public:
         bfnum nother = other;
         nthis.levelout(nother);
 
-        nthis.number.push_front(0);
-        nthis.mantissa.push_front(0);
-        nthis.len++;
-        nother.number.push_front(0);
-        nother.mantissa.push_front(0);
-        nother.len++;
-
-        bfnum null;
-        if (nother == null)
+        if (nother == 0)
         {
             std::cout << "ERROR: dividing by zero" << std::endl;
             exit(EXIT_FAILURE);
         }
-        else if (nthis == null)
+        else if (nthis == 0)
         {
-            return null;
+            return 0;
         }
         else
         {
-            bfnum new_num(0.0, nthis.man_len);
+            bfnum new_num(0.0);
             nthis.sign = 1;
             nother.sign = 1;
-            int dec_pt = 0;
+            int digit = 0;
+            int edge = nthis.len - nthis.man_len - 1;
 
-            while (nthis > null)
+            for (int i = 0; i < new_num.len; i++)
             {
-                nthis = nthis - nother;
-                if (nthis < null)
+                for (int j = 0; j < 10; j++)
                 {
-                    nthis = nthis + nother;
-                    nthis.sign = 1;
-                    break;
-                }
-                else if (nthis == null)
-                {
-                    dec_pt++;
-                    break;
-                }
-                else
-                {
-                    dec_pt++;
-                }
-            }
-            int digits = 0;
-            while (dec_pt > 0)
-            {
-                new_num.number.push_front(dec_pt % 10);
-                new_num.mantissa.push_front(0);
-                new_num.len++;
-                dec_pt /= 10;
-                digits++;
-            }
-
-            if (nthis != null)
-            {
-                nthis.push_left(1);
-                for (int i = digits; i < new_num.len; i++)
-                {
-                    for (int j = 0; j < 10; j++)
+                    nthis = nthis - nother;
+                    if (nthis < 0)
                     {
-                        nthis = nthis - nother;
-                        if (nthis < null)
+                        nthis = nthis + nother;
+                        nthis.sign = 1;
+                        new_num.number[i] = j;
+                        if (digit < edge)
                         {
-                            nthis = nthis + nother;
-                            nthis.sign = 1;
-                            new_num.number[i] = j;
-                            new_num.mantissa[i] = 1;
-                            break;
+                            new_num.push_left(1);
+                            i--;
                         }
-                        else if (nthis == null)
-                        {
-                            j++;
-                            new_num.number[i] = j;
-                            new_num.mantissa[i] = 1;
-                            goto stop;
-                        }
+                        nthis.push_left(1);
+                        digit++;
+                        break;
                     }
-                    nthis.push_left(1);
+                    else if (nthis == 0)
+                    {
+                        j++;
+                        new_num.number[i] = j;
+                        if (digit < edge)
+                        {
+                            new_num.push_left(1);
+                            i--;
+                        }
+                        goto stop;
+                    }
+                    else if (j == 9)
+                    {
+                        nthis.push_right(1);
+                        i--;
+                    }
                 }
             }
         stop:
-            if (this->sign == other.sign || new_num == null)
+            if (this->sign == other.sign || new_num == 0)
             {
                 new_num.sign = 1;
             }
