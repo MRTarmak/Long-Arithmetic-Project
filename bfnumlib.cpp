@@ -1,6 +1,3 @@
-#include <iostream>
-#include <deque>
-
 #include "bfnumlib.hpp"
 
 namespace BFNumLib
@@ -474,6 +471,8 @@ namespace BFNumLib
                 bfnum new_num = nother - nthis;
                 if (new_num != 0)
                     new_num.sign_change();
+
+                return new_num;
             }
         }
         else

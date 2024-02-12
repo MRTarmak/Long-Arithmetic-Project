@@ -2,7 +2,9 @@
 
 #include "bfnumlib.hpp"
 
-auto sqrt(bfnum &num)
+using namespace BFNumLib;
+
+auto msqrt(bfnum &num)
 {
     bfnum lh(0);
     bfnum rh = num + bfnum(1);
@@ -28,7 +30,7 @@ auto root(const bfnum &n, const bfnum &one)
     bfnum precision = 10000000000000000;
     auto n_float = (n * precision).div(one, 0);
     n_float = n_float / precision;
-    auto tmp = (precision * sqrt(n_float) * one);
+    auto tmp = (precision * msqrt(n_float) * one);
     tmp.evalf(0);
     auto x = tmp.div(precision, 0);
     auto n_one = n * one;
@@ -47,7 +49,7 @@ auto root(const bfnum &n, const bfnum &one)
 
 bfnum pi_calculation(long long n)
 {
-    bfnum mnull(0.0);
+    bfnum mnull(0);
     mnull.sign_change();
     bfnum one(10);
     one = one.pow(n);
