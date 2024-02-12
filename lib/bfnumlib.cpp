@@ -147,11 +147,6 @@ namespace BFNumLib
                 break;
         }
 
-        int old_len_t = len;
-        int old_man_len_t = man_len;
-        int old_len_o = other.len;
-        int old_man_len_o = other.man_len;
-
         int new_man_len = man_len > other.man_len ? man_len : other.man_len;
         int new_len = (len - man_len) > (other.len - other.man_len) ? (len - man_len) : (other.len - other.man_len);
         new_len += new_man_len;
@@ -628,7 +623,6 @@ namespace BFNumLib
                         if (digit < edge)
                         {
                             new_num.push_left(1);
-                            i--;
                         }
                         goto stop;
                     }

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "bfnumlib.hpp"
+#include "lib/bfnumlib.hpp"
 
 using namespace BFNumLib;
 
@@ -79,7 +79,7 @@ bfnum pi_calculation(long long n)
     return pi;
 }
 
-int main(void)
+int main()
 {
     bfnum pi;
     // bfnum a = 2.432;

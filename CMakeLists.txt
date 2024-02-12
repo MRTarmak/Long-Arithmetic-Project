@@ -11,6 +11,6 @@ set(SOURCE_FILES
         bfnumlib.cpp
 )
 
-add_library(BFNumLib STATIC bfnumlib.cpp
+add_library(BFNumLib STATIC lib/bfnumlib.cpp
         main.cpp
 )
