@@ -24,6 +24,7 @@ namespace BFNumLib
         bfnum(long);
         bfnum(long long);
         bfnum(double, int);
+        bfnum(double);
 
         std::string get_string();
 

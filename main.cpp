@@ -1,5 +1,5 @@
 #include <iostream>
-#include "lib/bfnumlib.hpp"
+#include <bfnumlib.hpp>
 
 using namespace BFNumLib;
 
@@ -81,9 +81,6 @@ bfnum pi_calculation(long long n)
 int main()
 {
     bfnum pi;
-    // bfnum a = 2.432;
-    // bfnum b = 75435.423;
-    // bfnum c = a / b;
     pi = pi_calculation(2);
     std::cout << pi.get_string() << std::endl;
 
