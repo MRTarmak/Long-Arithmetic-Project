@@ -3,14 +3,7 @@ project(LongArithmeticProject)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(HEADER_FILES
-        bfnumlib.hpp
-)
+add_executable(main main.cpp)
+add_library(BFNumLib lib/bfnumlib.cpp)
 
-set(SOURCE_FILES
-        bfnumlib.cpp
-)
-
-add_library(BFNumLib STATIC lib/bfnumlib.cpp
-        main.cpp
-)
+target_link_libraries(main PUBLIC BFNumLib)
