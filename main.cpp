@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include "lib/bfnumlib.hpp"
 
 using namespace BFNumLib;
