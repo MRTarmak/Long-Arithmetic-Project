@@ -190,17 +190,25 @@ namespace BFNumLib
         man_len = 0;
         number.push_back(0);
         mantissa.push_back(0);
-        sign = 1;
+        sign = true;
     }
 
     bfnum::bfnum(int num)
     {
-        *this = bfnum((long long)num);
+        bfnum nthis = bfnum((long long)num);
+        len = nthis.len;
+        man_len = nthis.man_len;
+        sign = nthis.sign;
+        *this = nthis;
     }
 
     bfnum::bfnum(long num)
     {
-        *this = bfnum((long long)num);
+        bfnum nthis = bfnum((long long)num);
+        len = nthis.len;
+        man_len = nthis.man_len;
+        sign = nthis.sign;
+        *this = nthis;
     }
 
     bfnum::bfnum(long long num)
@@ -274,7 +282,11 @@ namespace BFNumLib
 
     bfnum::bfnum(double num)
     {
-        *this = bfnum(num, DEFAULT_MAN_LEN);
+        bfnum nthis = bfnum(num, DEFAULT_MAN_LEN);
+        len = nthis.len;
+        man_len = nthis.man_len;
+        sign = nthis.sign;
+        *this = nthis;
     }
 
     std::string bfnum::get_string(int prec)
@@ -688,6 +700,24 @@ namespace BFNumLib
         }
     }
 
+    bfnum bfnum::pow(long long pow) const
+    {
+        bfnum nthis = *this;
+        bfnum new_num = 1;
+
+        while (pow != 0)
+        {
+            if (pow % 2 != 0)
+            {
+                new_num = new_num * nthis;
+            }
+            nthis = nthis * nthis;
+            pow /= 2;
+        }
+
+        return new_num;
+    }
+
     void bfnum::sign_change()
     {
         sign = !sign;
@@ -711,45 +741,5 @@ namespace BFNumLib
         {
             this->mantissa[i] = i > len - man_len - 1 ? 1 : 0;
         }
-    }
-
-    bfnum bfnum::fact() const
-    {
-        bfnum nthis = *this;
-        bfnum res = 1;
-        while (nthis != 0.0)
-        {
-            res = res * nthis;
-            nthis = nthis - 1;
-        }
-
-        return res;
-    }
-
-    bfnum bfnum::pow(long long pow) const
-    {
-        bfnum nthis = *this;
-        bfnum new_num = 1;
-
-        while (pow != 0)
-        {
-            if (pow % 2 != 0)
-            {
-                new_num = new_num * nthis;
-            }
-            nthis = nthis * nthis;
-            pow /= 2;
-        }
-
-        return new_num;
-    }
-
-    bfnum bfnum::abs() const
-    {
-        bfnum nthis = *this;
-
-        nthis.sign = true;
-
-        return nthis;
     }
 }

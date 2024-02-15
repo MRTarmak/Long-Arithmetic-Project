@@ -44,13 +44,10 @@ namespace BFNumLib
         bfnum operator/(const bfnum &) const;
 
         bfnum div(const bfnum &, int) const;
+        bfnum pow(long long) const;
 
         void sign_change();
         void evalf(int);
         void set_man_len(int);
-
-        bfnum fact() const;
-        bfnum pow(long long) const;
-        bfnum abs() const;
     };
 }

@@ -1,14 +1,15 @@
 #include <iostream>
+#include <ctime>
 #include <bfnumlib.hpp>
 
 using namespace BFNumLib;
 
-auto msqrt(const bfnum &num, long long precision)
+auto mysqrt(const bfnum &num, long long prec)
 {
     bfnum lh(0);
     bfnum rh = num + bfnum(1);
     bfnum eps(0.1, 1);
-    eps = eps.pow(70);
+    eps = eps.pow(prec);
     while (rh - lh > eps)
     {
         auto mid = lh + ((rh - lh) / 2);
@@ -22,15 +23,15 @@ auto msqrt(const bfnum &num, long long precision)
     return lh + (rh - lh) / 2;
 }
 
-auto root(const bfnum &n, const bfnum &one, long long prec)
+auto root(const bfnum &n, const bfnum &one)
 {
-    bfnum precision = 10000000000000000;
-    auto n_float = (n * precision).div(one, 0);
-    n_float = n_float / precision;
-    auto tmp = precision * msqrt(n_float, prec);
+    bfnum prec = 10000000000000000;
+    auto n_prec = (n * prec).div(one, 0);
+    n_prec = n_prec / prec;
+    auto tmp = prec * mysqrt(n_prec, 1);
     tmp.evalf(0);
     tmp = tmp * one;
-    auto x = tmp.div(precision, 0);
+    auto x = tmp.div(prec, 0);
     auto n_one = n * one;
     while (true)
     {
@@ -72,7 +73,7 @@ bfnum pi_calculation(int prec)
     }
     bfnum total = bfnum(13591409) * a_sum + bfnum(545140134) * b_sum;
     bfnum rt_param = bfnum(10005) * one;
-    bfnum pi = (bfnum(426880) * root(rt_param, one, prec) * one).div(total, 0);
+    bfnum pi = (bfnum(426880) * root(rt_param, one) * one).div(total, 0);
 
     pi.set_man_len(prec);
 
@@ -85,8 +86,11 @@ int main()
     int prec;
     std::cout << "Set precision:";
     std::cin >> prec;
-    pi = pi_calculation(prec);
-    std::cout << "Pi with " << prec << " signs after the decimal point: " << pi.get_string() << std::endl;
+    unsigned int start_time = clock();
+    pi = pi_calculation(prec + 10);
+    std::cout << "Pi with " << prec << " signs after the decimal point: " << pi.get_string(prec) << std::endl;
+    unsigned int end_time = clock();
+    std::cout << "Execution time: " << double(end_time - start_time) / CLOCKS_PER_SEC << "s" << std::endl;
 
     return 0;
 }
