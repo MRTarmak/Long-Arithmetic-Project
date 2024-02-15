@@ -1,5 +1,7 @@
 #include "bfnumlib.hpp"
 
+#define DEFAULT_MAN_LEN 70
+
 namespace BFNumLib
 {
     void bfnum::push_left(int num)
@@ -69,6 +71,7 @@ namespace BFNumLib
             number.push_back(0);
             mantissa.push_back(1);
             len++;
+            man_len++;
         }
         for (int i = len - 1; i >= 0; i--)
         {
@@ -80,6 +83,7 @@ namespace BFNumLib
                     number.pop_back();
                     mantissa.pop_back();
                     len--;
+                    man_len--;
                 }
                 else
                 {
@@ -244,13 +248,19 @@ namespace BFNumLib
             dec /= 10;
             len++;
         }
+        int digits = 0;
         num *= 10;
+        digits++;
         while (this->man_len < man_len)
         {
             dec = (long long)num % 10;
-            number.push_back((int)dec);
+            if (digits < 16)
+                number.push_back((int)dec);
+            else
+                number.push_back(0);
             mantissa.push_back(1);
             num *= 10;
+            digits++;
             len++;
             this->man_len++;
         }
@@ -264,18 +274,20 @@ namespace BFNumLib
 
     bfnum::bfnum(double num)
     {
-        *this = bfnum(num, 10);
+        *this = bfnum(num, DEFAULT_MAN_LEN);
     }
 
-    std::string bfnum::get_string()
+    std::string bfnum::get_string(int prec)
     {
         std::string str;
 
+        if (prec == -1)
+            prec = man_len;
         bool is_num = false;
         bool is_frac = false;
         if (this->sign == 0)
             str.push_back('-');
-        for (int i = 0; i < this->len; i++)
+        for (int i = 0; i < this->len - this->man_len + prec; i++)
         {
             if (is_num == 0 && this->mantissa[i] == 1)
             {
@@ -298,6 +310,11 @@ namespace BFNumLib
             str.push_back('0');
 
         return (str);
+    }
+
+    std::string bfnum::get_string()
+    {
+        return this->get_string(-1);
     }
 
     bfnum &bfnum::operator=(const bfnum &other)
@@ -328,7 +345,7 @@ namespace BFNumLib
 
     bfnum &bfnum::operator=(double other)
     {
-        bfnum nthis(other);
+        bfnum nthis(other, DEFAULT_MAN_LEN);
         *this = nthis;
 
         return *this;
@@ -407,6 +424,7 @@ namespace BFNumLib
             if (new_num.number[0] > 9)
             {
                 new_num.number.push_front(new_num.number[0] / 10);
+                new_num.mantissa.push_front(0);
                 new_num.number[1] = new_num.number[1] % 10;
                 new_num.len++;
             }
@@ -440,7 +458,9 @@ namespace BFNumLib
         {
             bfnum null;
             null.sign = false;
-            if (nthis < nother)
+            if (nthis == nother)
+                return null;
+            else if (nthis > nother)
             {
                 bfnum new_num = nthis;
 
@@ -519,7 +539,7 @@ namespace BFNumLib
                     {
                         plus.push_right(i - (nthis.len - nthis.man_len - 1));
                     }
-                    else
+                    else if (nthis.len - nthis.man_len - 1 - i > 0)
                     {
                         plus.push_left(nthis.len - nthis.man_len - 1 - i);
                     }
@@ -527,8 +547,6 @@ namespace BFNumLib
                     plus = 0.0;
                 }
             }
-            new_num.push_right(nother.man_len);
-            new_num.man_len += nother.man_len;
 
             if (nthis.sign == nother.sign || new_num == null)
             {
@@ -543,7 +561,7 @@ namespace BFNumLib
 
     bfnum bfnum::operator/(const bfnum &other) const
     {
-        return div(other, 10);
+        return div(other, DEFAULT_MAN_LEN);
     }
 
     bfnum bfnum::div(const bfnum &other, int man) const
@@ -566,7 +584,12 @@ namespace BFNumLib
         }
         else
         {
-            bfnum new_num(0.0, man);
+            bfnum new_num;
+            new_num.number.clear();
+            new_num.mantissa.clear();
+            new_num.len = 0;
+            new_num.man_len = 0;
+            new_num.sign = true;
             bfnum mnull(0.0);
             mnull.sign = false;
             int digit = 0;
@@ -603,19 +626,25 @@ namespace BFNumLib
                 }
             }
 
-            for (int i = 0; i < new_num.len; i++)
+            while (new_num.man_len < man || man == 0)
             {
                 for (int j = 0; j < 10; j++)
                 {
+                    if (digit == edge && man == 0)
+                        goto stop;
                     nthis = nthis - nother;
                     if (nthis < mnull)
                     {
                         nthis = nthis + nother;
                         nthis.sign = true;
-                        new_num.number[i] = j;
+                        new_num.number.push_back(j);
+                        new_num.len++;
                         if (digit < edge)
+                            new_num.mantissa.push_back(0);
+                        else
                         {
-                            new_num.push_left(1);
+                            new_num.mantissa.push_back(1);
+                            new_num.man_len++;
                         }
                         nother.man_len++;
                         digit++;
@@ -624,10 +653,24 @@ namespace BFNumLib
                     else if (nthis == mnull)
                     {
                         j++;
-                        new_num.number[i] = j;
+                        new_num.number.push_back(j);
+                        new_num.len++;
                         if (digit < edge)
                         {
-                            new_num.push_left(1);
+                            new_num.mantissa.push_back(0);
+                            digit++;
+                            while (digit < edge)
+                            {
+                                new_num.number.push_back(0);
+                                new_num.mantissa.push_back(0);
+                                new_num.len++;
+                                digit++;
+                            }
+                        }
+                        else
+                        {
+                            new_num.mantissa.push_back(1);
+                            new_num.man_len++;
                         }
                         goto stop;
                     }
@@ -658,6 +701,15 @@ namespace BFNumLib
             len--;
             number.pop_back();
             mantissa.pop_back();
+        }
+    }
+
+    void bfnum::set_man_len(int man)
+    {
+        this->man_len = man;
+        for (int i = 0; i < len; i++)
+        {
+            this->mantissa[i] = i > len - man_len - 1 ? 1 : 0;
         }
     }
 

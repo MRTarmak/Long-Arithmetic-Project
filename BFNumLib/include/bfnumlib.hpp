@@ -26,6 +26,7 @@ namespace BFNumLib
         bfnum(double, int);
         bfnum(double);
 
+        std::string get_string(int);
         std::string get_string();
 
         bfnum &operator=(const bfnum &);
@@ -46,6 +47,7 @@ namespace BFNumLib
 
         void sign_change();
         void evalf(int);
+        void set_man_len(int);
 
         bfnum fact() const;
         bfnum pow(long long) const;
